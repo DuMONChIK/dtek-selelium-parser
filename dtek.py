@@ -1,4 +1,4 @@
-#!/usr/bin/env python3 
+#!/usr/bin/env python3
 
 import sys, time, os
 
@@ -64,44 +64,6 @@ time.sleep(2)
 btfl_soup   = BeautifulSoup(chrome_driver.page_source, features="html.parser")
 parsed_html = btfl_soup.findAll(True, {"class":["cell-non-scheduled", "cell-scheduled", "cell-scheduled-maybe"]})
 
-# Create nice dict for data.
-#distinct_time_week_schedule = {
-#        "Monday"     : False,
-#        "Tuesday"    : False,
-#        "Wedndesday" : False,
-#        "Thursday"   : False,
-#        "Friday"     : False,
-#        "Saturday"   : False,
-#        "Sunday"     : False
-#}
-
-#time_schedule = {
-#        "00:00-01:00" : distinct_time_week_schedule.copy(),
-#        "01:00-02:00" : distinct_time_week_schedule.copy(),
-#        "02:00-03:00" : distinct_time_week_schedule.copy(),
-#        "03:00-04:00" : distinct_time_week_schedule.copy(),
-#        "04:00-05:00" : distinct_time_week_schedule.copy(),
-#        "05:00-06:00" : distinct_time_week_schedule.copy(),
-#        "06:00-07:00" : distinct_time_week_schedule.copy(),
-#        "07:00-08:00" : distinct_time_week_schedule.copy(),
-#        "08:00-09:00" : distinct_time_week_schedule.copy(),
-#        "09:00-10:00" : distinct_time_week_schedule.copy(),
-#        "10:00-11:00" : distinct_time_week_schedule.copy(),
-#        "11:00-12:00" : distinct_time_week_schedule.copy(),
-#        "12:00-13:00" : distinct_time_week_schedule.copy(),
-#        "13:00-14:00" : distinct_time_week_schedule.copy(),
-#        "14:00-15:00" : distinct_time_week_schedule.copy(),
-#        "15:00-16:00" : distinct_time_week_schedule.copy(),
-#        "16:00-17:00" : distinct_time_week_schedule.copy(),
-#        "17:00-18:00" : distinct_time_week_schedule.copy(),
-#        "18:00-19:00" : distinct_time_week_schedule.copy(),
-#        "19:00-20:00" : distinct_time_week_schedule.copy(),
-#        "20:00-21:00" : distinct_time_week_schedule.copy(),
-#        "21:00-22:00" : distinct_time_week_schedule.copy(),
-#        "22:00-23:00" : distinct_time_week_schedule.copy(),
-#        "23:00-24:00" : distinct_time_week_schedule.copy()
-#}
-
 time_intervals = {
         "00:00-01:00" : "Unknown",
         "01:00-02:00" : "Unknown",
@@ -163,7 +125,6 @@ for col in range(TABLE_COL_COUNT):
 
         # Learn if current time is scheduled.
         current_class     = parsed_html[html_array_position].get("class")
-        time_is_scheduled = "Unknown"
         if current_class[0] == "cell-scheduled":
             time_is_scheduled = "Off"
         if current_class[0] == "cell-scheduled-maybe":
