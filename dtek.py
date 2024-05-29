@@ -42,8 +42,8 @@ chrome_driver = webdriver.Chrome(
 
 chrome_driver.get('https://www.dtek-kem.com.ua/ua/shutdowns')
 
-#street_address_text = "вул. Балаклієвська"
-#house_number_text   = "12"
+##street_address_text = "вул. Балаклієвська"
+##house_number_text   = "12"
 
 street_address_text = command_line_arguments.street
 house_number_text   = command_line_arguments.house
@@ -61,35 +61,88 @@ house_number_box.send_keys(Keys.ENTER)
 time.sleep(2)
 
 # Get the table
-btfl_soup   = BeautifulSoup(chrome_driver.page_source)
-parsed_html = btfl_soup.findAll(True, {"class":["cell-non-scheduled", "cell-scheduled"]})
+btfl_soup   = BeautifulSoup(chrome_driver.page_source, features="html.parser")
+parsed_html = btfl_soup.findAll(True, {"class":["cell-non-scheduled", "cell-scheduled", "cell-scheduled-maybe"]})
 
 # Create nice dict for data.
-distinct_time_week_schedule = {
-        "Monday"     : False,
-        "Tuesday"    : False,
-        "Wedndesday" : False,
-        "Thursday"   : False,
-        "Friday"     : False,
-        "Saturday"   : False,
-        "Sunday"     : False
+#distinct_time_week_schedule = {
+#        "Monday"     : False,
+#        "Tuesday"    : False,
+#        "Wedndesday" : False,
+#        "Thursday"   : False,
+#        "Friday"     : False,
+#        "Saturday"   : False,
+#        "Sunday"     : False
+#}
+
+#time_schedule = {
+#        "00:00-01:00" : distinct_time_week_schedule.copy(),
+#        "01:00-02:00" : distinct_time_week_schedule.copy(),
+#        "02:00-03:00" : distinct_time_week_schedule.copy(),
+#        "03:00-04:00" : distinct_time_week_schedule.copy(),
+#        "04:00-05:00" : distinct_time_week_schedule.copy(),
+#        "05:00-06:00" : distinct_time_week_schedule.copy(),
+#        "06:00-07:00" : distinct_time_week_schedule.copy(),
+#        "07:00-08:00" : distinct_time_week_schedule.copy(),
+#        "08:00-09:00" : distinct_time_week_schedule.copy(),
+#        "09:00-10:00" : distinct_time_week_schedule.copy(),
+#        "10:00-11:00" : distinct_time_week_schedule.copy(),
+#        "11:00-12:00" : distinct_time_week_schedule.copy(),
+#        "12:00-13:00" : distinct_time_week_schedule.copy(),
+#        "13:00-14:00" : distinct_time_week_schedule.copy(),
+#        "14:00-15:00" : distinct_time_week_schedule.copy(),
+#        "15:00-16:00" : distinct_time_week_schedule.copy(),
+#        "16:00-17:00" : distinct_time_week_schedule.copy(),
+#        "17:00-18:00" : distinct_time_week_schedule.copy(),
+#        "18:00-19:00" : distinct_time_week_schedule.copy(),
+#        "19:00-20:00" : distinct_time_week_schedule.copy(),
+#        "20:00-21:00" : distinct_time_week_schedule.copy(),
+#        "21:00-22:00" : distinct_time_week_schedule.copy(),
+#        "22:00-23:00" : distinct_time_week_schedule.copy(),
+#        "23:00-24:00" : distinct_time_week_schedule.copy()
+#}
+
+time_intervals = {
+        "00:00-01:00" : "Unknown",
+        "01:00-02:00" : "Unknown",
+        "02:00-03:00" : "Unknown",
+        "03:00-04:00" : "Unknown",
+        "04:00-05:00" : "Unknown",
+        "05:00-06:00" : "Unknown",
+        "06:00-07:00" : "Unknown",
+        "07:00-08:00" : "Unknown",
+        "08:00-09:00" : "Unknown",
+        "09:00-10:00" : "Unknown",
+        "10:00-11:00" : "Unknown",
+        "11:00-12:00" : "Unknown",
+        "12:00-13:00" : "Unknown",
+        "13:00-14:00" : "Unknown",
+        "14:00-15:00" : "Unknown",
+        "15:00-16:00" : "Unknown",
+        "16:00-17:00" : "Unknown",
+        "17:00-18:00" : "Unknown",
+        "18:00-19:00" : "Unknown",
+        "19:00-20:00" : "Unknown",
+        "20:00-21:00" : "Unknown",
+        "21:00-22:00" : "Unknown",
+        "22:00-23:00" : "Unknown",
+        "23:00-24:00" : "Unknown"
 }
 
-time_schedule = {
-        "00:00-01:00" : distinct_time_week_schedule.copy(),
-        "00:00-04:00" : distinct_time_week_schedule.copy(),
-        "03:00-07:00" : distinct_time_week_schedule.copy(),
-        "06:00-10:00" : distinct_time_week_schedule.copy(),
-        "09:00-13:00" : distinct_time_week_schedule.copy(),
-        "12:16-01:00" : distinct_time_week_schedule.copy(),
-        "15:00-19:00" : distinct_time_week_schedule.copy(),
-        "18:00-22:00" : distinct_time_week_schedule.copy(),
-        "21:00-24:00" : distinct_time_week_schedule.copy()
+time_scheduling = {
+        "Monday"     : time_intervals.copy(),
+        "Tuesday"    : time_intervals.copy(),
+        "Wedndesday" : time_intervals.copy(),
+        "Thursday"   : time_intervals.copy(),
+        "Friday"     : time_intervals.copy(),
+        "Saturday"   : time_intervals.copy(),
+        "Sunday"     : time_intervals.copy()
 }
+
 
 # Parse class name into nice table.
 TABLE_ROW_COUNT = 7
-TABLE_COL_COUNT = 9
+TABLE_COL_COUNT = 24
 
 # Global HTML element position.
 html_array_position = 0
@@ -101,17 +154,24 @@ def get_dict_key(dictionary, n) -> str:
             return key
 
 # Asign values to dictionaries according to the class name.
+
 for col in range(TABLE_COL_COUNT):
-    dict_col_key = get_dict_key(time_schedule, col)
-    
+    dict_col_key = get_dict_key(time_intervals, col)
+
     for row in range(TABLE_ROW_COUNT):
-        dict_row_key = get_dict_key(distinct_time_week_schedule, row)
-        
+        dict_row_key = get_dict_key(time_scheduling, row)
+
         # Learn if current time is scheduled.
         current_class     = parsed_html[html_array_position].get("class")
-        time_is_scheduled = True if current_class[0] == "cell-scheduled" else False
-        
-        time_schedule[dict_col_key][dict_row_key] = time_is_scheduled
+        time_is_scheduled = "Unknown"
+        if current_class[0] == "cell-scheduled":
+            time_is_scheduled = "Off"
+        if current_class[0] == "cell-scheduled-maybe":
+            time_is_scheduled = "Maybe"
+        if current_class[0] == "cell-non-scheduled":
+            time_is_scheduled = "On"
+
+        time_scheduling[dict_row_key][dict_col_key] = time_is_scheduled
 
         html_array_position += 1
 
@@ -125,9 +185,6 @@ elif command_line_arguments.json_stderr:
     print(json.dumps(time_schedule,indent=4), file=stderr)
 else: # If the --file [FILE] specified
     with open(command_line_arguments.json_file, "w") as json_file:
-        json_file.write(json.dumps(time_schedule, indent=4))
-    
+        json_file.write(json.dumps(time_scheduling, indent=4))
+
 chrome_driver.close()
-
-
-
