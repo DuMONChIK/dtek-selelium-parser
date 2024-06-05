@@ -2,9 +2,23 @@
 
 input_json="$1"
 
+# Minutes before remind of event
+# less zero - disable
+# zero and bigger - enable reminder
+CALENDAR_REMIND_MINUTES=-1
+
+
+###############################
+
 if [ ! -f "${input_json}" ]; then
  echo "ERROR: No json file"
  exit 1
+fi
+
+if [ ${CALENDAR_REMIND_MINUTES} -ge 0 ]; then
+ reminder=${CALENDAR_REMIND_MINUTES}
+else
+ reminder=""
 fi
 
 for days in today tomorrow; do
@@ -12,12 +26,23 @@ for days in today tomorrow; do
  delete_t1=`LC_ALL=C date --date "${days}" "+%F"`
  delete_t2=`LC_ALL=C date --date "${days} + 1 day" "+%F"`
 
- readarray -t SHUTDOWNS < <(jq ".${day_name}" ${input_json})
+ echo "day_name=${day_name}"
+
+ # fix DTEK day names
+ day_name_dtek=${day_name}
+ if [ ${day_name} == "Wednesday" ]; then
+       day_name_dtek="Wedndesday"
+ fi
+
+ readarray -t SHUTDOWNS < <(jq ".${day_name_dtek}" ${input_json})
 
  if [ "${#SHUTDOWNS[@]}" -eq 26 ]; then
 
   # delete events from calendar
-  gcalcli delete --military "DTEK" "${delete_t1}" "${delete_t2}" --iamaexpert
+  gcalcli --nocolor delete \
+   --military "DTEK" \
+   "${delete_t1}" "${delete_t2}" \
+   --iamaexpert
 
   for i in {1..24}; do
    s=${SHUTDOWNS[${i}]}
@@ -30,18 +55,18 @@ for days in today tomorrow; do
    t1=${states[0]}
    t2=${states[1]}
    if [ ${ss} == "Maybe" ]; then
-    color="flamingo"
-   else
     color="grape"
+   else
+    color="flamingo"
    fi
    if [ ${ss} == "Off" ] || [ ${ss} == "Maybe" ]; then
-    gcalcli add \
+    gcalcli --nocolor add \
      --calendar "DTEK" \
      --title "DTEK/${ss}" \
      --when "${day_name} ${t1}" \
      --duration "60" \
+     ${reminder} \
      --description "Power ${ss}" \
-     --reminder 0 \
      --color ${color} \
      --noprompt
    fi
